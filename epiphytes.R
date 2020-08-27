@@ -9,7 +9,7 @@ library(patchwork)
 library(sjPlot)
 
 # Read and transform data
-Lav_spe <- read.delim("~/Documents/R/paper_3/Raw_data/Lav_spe.txt", row.names=1)
+Lav_spe <- read.delim("Raw_data/Lav_spe.txt", row.names=1)
 spe<-Lav_spe
 spe<-spe/400
 head(spe)
@@ -17,12 +17,12 @@ head(spe)
 #spe<-read.table("Lav_spe2.txt", header = T, row.names = 1, sep = "\t")
 #spe<-spe/400
 
-Lav_env <- read.csv("~/Documents/R/paper_3/Raw_data/Lav_env.csv")
+Lav_env <- read.csv("Raw_data/Lav_env.csv")
 env <- Lav_env
 env$Område<-paste(substring(env$Område,1,2),env$Inv_nr, sep="_")
 env$Område<-factor(env$Område)
 
-känslighet <- read.csv("~/Documents/R/paper_3/Raw_data/känslighet.csv")
+känslighet <- read.csv("Raw_data/känslighet.csv")
 känsl <- känslighet
 känsl <- column_to_rownames(känsl, "Arter")
 #känsl$species<-gsub(" ", ".", rownames(känsl)) # Lägg till kolumn med artnamn med punkt
@@ -940,7 +940,7 @@ IM_dep_long$country <-
     )
   )
 
-#IM data is long, Forests is wide, spread IM to match
+#IM data is long, spread
 parameters <- c("NH4N", "NO3N", "PH", "SO4S")
 IM_dep <- filter(IM_dep_long, ParameterCode %in% parameters) %>%
   spread(., ParameterCode, Value)
