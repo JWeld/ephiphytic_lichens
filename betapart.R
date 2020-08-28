@@ -16,11 +16,11 @@ dat.pa=cbind(Tree=0, dat.pa)
 dat.pa=cbind(Plot=0, dat.pa) #add back some empty columns in that case...
 dat.pa=cbind(Year=0, dat.pa)
 dat.pa=cbind(ID=0, dat.pa) 
-dat.pa$Year <- data2$Year #copy the values
+dat.pa$Year <- data2$Year #copy the values from object previously produced in epiphytes.R
 dat.pa$Site=data2$Site
 dat.pa$Plot=data2$Plot
 dat.pa$Tree=data2$Tree
-dat.pa$ID=data2$ID#to put them back in.  Clumsy, but works...
+dat.pa$ID=data2$ID#to put them back in.
 str(dat.pa)
 
 #Betapart doesn't like year and plot columns. Subset by year...
@@ -128,7 +128,7 @@ boxplot(betapart_t_Ga)
 title("betapart_t_Ga")
 
 #plot probability distributions####
-# sampling across equal sites (change to the beta.core object for the site of interest)
+# sampling across equal sites (CHANGE to the beta.core object for the site of interest!)
 samp_1 <- beta.sample(Ki1c, sites=10, samples=100, index.family="sor")
 samp_2 <- beta.sample(Ki2c, sites=10, samples=100, index.family="sor") 
 samp_3 <- beta.sample(Ki3c, sites=10, samples=100, index.family="sor") 
@@ -140,24 +140,6 @@ dist_2 <- samp_2$sampled.values
 dist_3 <- samp_3$sampled.values 
 dist_4 <- samp_4$sampled.values 
 
-# par(mfrow=c(1,1))
-# plot(density(
-#   dist_1$beta.SNE), xlim=c(0,0.9), ylim=c(0, 20), xlab='Beta diversity', main='', col='grey60',lwd=2)
-# #lines(density(dist_1$beta.SOR),col='grey60', lwd=2) 
-# #lines(density(dist_1$beta.SNE),col='grey60', lty=1, lwd=2) 
-# lines(density(dist_1$beta.SIM),col='grey60', lty=2, lwd=2)
-# #lines(density(dist_2$beta.SOR),col='red', lwd=2) 
-# lines(density(dist_2$beta.SNE),col='red', lty=1,lwd=2) 
-# lines(density(dist_2$beta.SIM),col='red', lty=2,lwd=2) 
-# #lines(density(dist_3$beta.SOR),col='green', lwd=2) 
-# lines(density(dist_3$beta.SNE),col='green', lty=1, lwd=2) 
-# lines(density(dist_3$beta.SIM),col='green', lty=2, lwd=2)
-# #lines(density(dist_4$beta.SOR),col='blue', lwd=2) 
-# lines(density(dist_4$beta.SNE),col='blue', lty=1, lwd=2) 
-# lines(density(dist_4$beta.SIM),col='blue', lty=2, lwd=2)
-# title("gray=1,r=2, g=3, b=4, right=total, left=nest, dash=turn" )
-
-#alternative
 #Aneboda
 par(mfrow=c(1,1))
 plot(density(
@@ -243,52 +225,53 @@ legend(0.5, 15, legend=c("Turnover", "Nestedness"), lty= c(1,2), cex=0.8)
 legend(0.5, 12, legend=c("1998", "2004", "2008", "2013"),
        col=c("grey60","red","green", "blue"), lty=1, cex=0.8)
 
+#Not Used####
 
-#alternative Jaccard
-par(mfrow=c(1,1))
-plot(density(
-  dist_1$beta.JNE), xlim=c(0,0.9), ylim=c(0, 22), xlab='Beta diversity', main='', col='grey60',lwd=2)
-#lines(density(dist_1$beta.JAC),col='grey60', lwd=2) 
-lines(density(dist_1$beta.JNE),col='grey60', lty=1, lwd=2) 
-lines(density(dist_1$beta.JTU),col='grey60', lty=2, lwd=2)
-#lines(density(dist_2$beta.JAC),col='red', lwd=2) 
-lines(density(dist_2$beta.JNE),col='red', lty=1,lwd=2) 
-lines(density(dist_2$beta.JTU),col='red', lty=2,lwd=2) 
-#lines(density(dist_3$beta.JAC),col='green', lwd=2) 
-lines(density(dist_3$beta.JNE),col='green', lty=1, lwd=2) 
-lines(density(dist_3$beta.JTU),col='green', lty=2, lwd=2)
-#lines(density(dist_4$beta.JAC),col='blue', lwd=2) 
-lines(density(dist_4$beta.JNE),col='blue', lty=1, lwd=2) 
-lines(density(dist_4$beta.JTU),col='blue', lty=2, lwd=2)
-#title("gray=1,r=2, g=3, b=4, right=total, left=nest, dash=turn" )
-title("Gårdsjön")
-# Add a legend
-legend(0.7, 18, legend=c("1997", "2002", "2007", "2012"),
-       col=c("grey60","red","green", "blue"), lty=1, cex=0.8)
-text(0.15, 18, labels = "Turnover")
-text(0.65, 10, labels = "Nestedness")
+# #alternative Jaccard
+# par(mfrow=c(1,1))
+# plot(density(
+#   dist_1$beta.JNE), xlim=c(0,0.9), ylim=c(0, 22), xlab='Beta diversity', main='', col='grey60',lwd=2)
+# #lines(density(dist_1$beta.JAC),col='grey60', lwd=2) 
+# lines(density(dist_1$beta.JNE),col='grey60', lty=1, lwd=2) 
+# lines(density(dist_1$beta.JTU),col='grey60', lty=2, lwd=2)
+# #lines(density(dist_2$beta.JAC),col='red', lwd=2) 
+# lines(density(dist_2$beta.JNE),col='red', lty=1,lwd=2) 
+# lines(density(dist_2$beta.JTU),col='red', lty=2,lwd=2) 
+# #lines(density(dist_3$beta.JAC),col='green', lwd=2) 
+# lines(density(dist_3$beta.JNE),col='green', lty=1, lwd=2) 
+# lines(density(dist_3$beta.JTU),col='green', lty=2, lwd=2)
+# #lines(density(dist_4$beta.JAC),col='blue', lwd=2) 
+# lines(density(dist_4$beta.JNE),col='blue', lty=1, lwd=2) 
+# lines(density(dist_4$beta.JTU),col='blue', lty=2, lwd=2)
+# #title("gray=1,r=2, g=3, b=4, right=total, left=nest, dash=turn" )
+# title("Gårdsjön")
+# # Add a legend
+# legend(0.7, 18, legend=c("1997", "2002", "2007", "2012"),
+#        col=c("grey60","red","green", "blue"), lty=1, cex=0.8)
+# text(0.15, 18, labels = "Turnover")
+# text(0.65, 10, labels = "Nestedness")
 
-# Now, we'll calculate the Jaccard index and its partitions of turnover and nestedness. We can calculate Sorensen index instead by using the argument     index.family="sorensen"    .
-dist<-beta.pair(select(dat.pa.4,-Year, -Plot, -Site, -Tree, -ID), index.family="sorensen")
-dist<-bray.part(dat)
-# To get the pairwise Jaccard index turnover partition between communities, type: dist[[1]]. To get nestedness partition, type: dist[[2]]. To get all beta diversity: dist[[3]].
-groups <- data$Site
-bd<-betadisper(dist[[3]],groups)
-plot(bd)
-boxplot(bd)
-anova(bd)
+# # Now, we'll calculate the Jaccard index and its partitions of turnover and nestedness. We can calculate Sorensen index instead by using the argument     index.family="sorensen"    .
+# dist<-beta.pair(select(dat.pa.4,-Year, -Plot, -Site, -Tree, -ID), index.family="sorensen")
+# dist<-bray.part(dat)
+# # To get the pairwise Jaccard index turnover partition between communities, type: dist[[1]]. To get nestedness partition, type: dist[[2]]. To get all beta diversity: dist[[3]].
+# groups <- data$Site
+# bd<-betadisper(dist[[3]],groups)
+# plot(bd)
+# boxplot(bd)
+# anova(bd)
 
 
 
 #exploratory PCA####
-group <- data4$Site
-dat <- select(data4, -c(ID, Site, Year, Plot, Tree, TInd, RInd, pH, id2, ID3, sp))
-
-fit <- rda(dat, scale = TRUE)
-pl <- ordiplot(fit, type = "none")
-points(pl, "sites", pch=21, col="red", bg="yellow")
-text(pl, "species", col="blue", cex=0.9)
-ordihull(fit, groups = data4$Site, label = TRUE)
+# group <- data4$Site
+# dat <- select(data4, -c(ID, Site, Year, Plot, Tree, TInd, RInd, pH, id2, ID3, sp))
+# 
+# fit <- rda(dat, scale = TRUE)
+# pl <- ordiplot(fit, type = "none")
+# points(pl, "sites", pch=21, col="red", bg="yellow")
+# text(pl, "species", col="blue", cex=0.9)
+# ordihull(fit, groups = data4$Site, label = TRUE)
 
 
 

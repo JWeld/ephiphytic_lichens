@@ -14,8 +14,6 @@ spe<-Lav_spe
 spe<-spe/400
 head(spe)
 # Nya artdata med överföring av Bryoria capillaris/fuscescens till Bryoria fuscescens
-#spe<-read.table("Lav_spe2.txt", header = T, row.names = 1, sep = "\t")
-#spe<-spe/400
 
 Lav_env <- read.csv("Raw_data/Lav_env.csv")
 env <- Lav_env
@@ -34,13 +32,6 @@ känsl$X.1 <- NULL
 känsl$X.2 <- NULL
 känsl$X <- NULL
 
-# Ta bort asp, sälg och ek???
-#spe<-subset(spe, env$TreeSp == "PINU SYL" | env$TreeSp == "PICE ABI" | env$TreeSp == "BETULA Z")
-#env<-subset(env, env$TreeSp == "PINU SYL" | env$TreeSp == "PICE ABI" | env$TreeSp == "BETULA Z")
-############# Ta bort asp, sälg och ek
-# keep <- c("PS","PA","BZ","PINU SYL","PICE ABI","BETULA Z")
-# spe <- filter(spe, sp %in% keep)
-# env <- filter(env, TreeSp %in% keep)
 env$TreeSp <- as.factor(env$TreeSp)
 env <- as_tibble(env)
 env <- column_to_rownames(env, "Art")
@@ -60,7 +51,7 @@ wirth$N <- as.numeric(wirth$N)
 
 #### combine H index and Ellenbergs####
 känsl2 <- left_join(känsl,select(wirth, -K))
-känsl3 <- full_join(känsl,select(wirth, -K))#more matches with ellenbergs than in hultengren, use for CWM N?
+känsl3 <- full_join(känsl,select(wirth, -K))
 # Beräkna viktat medel = Känslighetsindex
 KInd<-isc(veg=spe, trait.db=känsl2, ivname="K", keyname = "species" ,method ='mean')
 pHInd<-isc(veg=spe, trait.db=känsl2, ivname="pH.tal", keyname = "species" ,method ='mean')
@@ -147,9 +138,6 @@ filter(känsl3, species %in% spe_list) %>% summary #43 spp N: median 2 1stQ 2. 3
 #use 1st and 3rd quartiles to define sensitive/insensitive species,
 #as the lower quartile is central to the lower half of the data and
 #the upper quartile is central to the upper half of the data.
-#Use values for all species we have data for to define "sensitive" or
-#only those that are in surveys? 
-
 S_sens_list <- filter(känsl2, K >= 6) %>% select(species)
 S_sens_list <- S_sens_list$species
 # S_insens_list <- filter(känsl2, K < 3) %>% select(species)
@@ -168,28 +156,17 @@ spe_S_sens$n_ss_sp <-apply(spe_S_sens>0,1,sum)
 spe_S_sens <- rownames_to_column(spe_S_sens, var = "ID")
 S_sens_count <- select(spe_S_sens, ID, n_ss_sp)
 
-# spe_S_insens <- select(spe, one_of(S_insens_list))
-# spe_S_insens$n_si_sp <-apply(spe_S_insens>0,1,sum)
-# spe_S_insens <- rownames_to_column(spe_S_insens, var = "ID")
-# S_insens_count <- select(spe_S_insens, ID, n_si_sp)
-
 spe_N_sens <- select(spe, one_of(N_sens_list))
 spe_N_sens$n_ns_sp <-apply(spe_N_sens>0,1,sum)
 spe_N_sens <- rownames_to_column(spe_N_sens, var = "ID")
 N_sens_count <- select(spe_N_sens, ID, n_ns_sp)
-
-# spe_N_insens <- select(spe, one_of(N_insens_list))
-# spe_N_insens$prop_ns <-apply(spe_N_insens>0,1,sum)
-# spe_N_insens <- rownames_to_column(spe_N_insens, var = "ID")
-# N_insens_count <- select(spe_N_insens, ID, prop_ns)
-
 
 sens_counts <- full_join(S_sens_count, N_sens_count)
 data <- left_join(data, sens_counts)
 data$ID <- as.factor(data$ID)
 
 #E 3-PS5 has NA values for Sensitivity,ph and N in 2011
-#use values for same tree from the previous survey 2006? or remove 2011 record from dataset?
+#use values for same tree from the previous survey 2006
 (a<-which(is.na(data$pH)))
 rownames(data)[a]
 (a<-which(is.na(data$Nitrogen)))
@@ -208,7 +185,7 @@ data$sp <- as.factor(data$sp)
 
 data2 <- cbind(data, TInd)
 data2 <- cbind(data2, RInd)
-data3 <- filter(data2, ID != "Gd11E 3-PS5") #remove?
+data3 <- filter(data2, ID != "Gd11E 3-PS5")
 data <- data3
 
 #proportion sensitive columns####
@@ -248,16 +225,10 @@ ggplot(data,aes(x=as.numeric(as.character(Year)),y=prop_ns,colour=Site))+geom_po
 
 #
 saveRDS(data,"data.RDS")  
-# 
-# 
-#library(DataExplorer)
-#create_report(data)
 
 dep_means <- readRDS("dep_means.RDS")
 library(stringr)
 deposition <- dep_means %>%  filter(str_detect(ID, "SE"))
-#saveRDS(data,"data.RDS")  
-
 
 #subset by site
 data.An <- dplyr::filter(data, Site == "An")
@@ -413,8 +384,7 @@ customplot <- function(data, x, y){
                       panel.background = element_rect(fill = 'white', colour = "black"))
        return(gg)
 }
-# Remove outliers when overlaying boxplot with original data points
-#p + geom_boxplot(outlier.shape = NA) + geom_jitter(width = 0.2)
+
 
 #change data names on copies to make labelling plots easier
 Gårdsjön <- data_Gd
@@ -430,163 +400,8 @@ d <- customplot(Gammtratten,x= Year, y=Sensitivity)
 library(patchwork)
 a+b+c+d
 
-# ggsave(
-#   file="sens.tiff",
-#   plot = last_plot(),
-#   width = NA,
-#   height = NA,
-#   units = c("in", "cm", "mm"),
-#   dpi = 320,
-#   limitsize = TRUE
-# )
-# Alla Siteåden i samma boxplot####
-#png(file = "Boxplot_Sensitivity.png", bg = "white", width = 1920, height = 1920, res = 400, pointsize = 12)
-
-# par(mfrow = c(2,2))
-# boxplot(Sensitivity~Year,data=data_Gd, main="Gårdsjön", xlab="Year", ylab="Sensitvity") 
-# boxplot(Sensitivity~Year,data=data_An, main="Aneboda", xlab="Year", ylab="Sensitvity") 
-# boxplot(Sensitivity~Year,data=data_Ki, main="Kindla", xlab="Year", ylab="Sensitvity") 
-# boxplot(Sensitivity~Year,data=data_Ga, main="Gammtraten", xlab="Year", ylab="Sensitvity") 
-# par(mfrow = c(1,1))
 
 plot_model(Ga.mod1.s,type = "diag") #sjPlot
-
-# tab_model(Gd.mod1.s,An.mod1.s,Ki.mod1.s,Ga.mod1.s)
-# tab_model(Gd.mod1.s,show.icc = FALSE,show.re.var = FALSE,p.val = "kr", show.df = TRUE)
-
-######## pH #################
-
-# Subset med bara Gårdsjön#####
-names(data_Gd)
-
-(a<-which(is.na(data_Gd$pH)))
-rownames(data_Gd)[a]
-
-## nmle regressioner 
-
-data_Gd$time<-1
-data_Gd$time[data_Gd$Year=="2001"]<-6
-data_Gd$time[data_Gd$Year=="2006"]<-11
-data_Gd$time[data_Gd$Year=="2011"]<-16
-
-summary(Gd.mod1.ph<-lme(pH~time,random=~1|Plot/Tree,correlation=corCAR1(form=~time|Plot/Tree), data=data_Gd[-55,]))
-anova(Gd.mod1.ph)
-fixed.effects(Gd.mod1.ph)
-
-plot(Gd.mod1.ph, col = c(1:nlevels(as.factor(data_Gd$time))), pch = 16, main="Gårdsjön, pH")
-
-#summary(Gd_pH.mod2<-lme(pH~as.factor(time),random=~1|Plot/Tree,correlation=corCAR1(form=~time|Plot/Tree), data=data_Gd))
-#plot(Gd_pH.mod2, col = as.numeric(factor(data_Gd$time, levels = unique(data_Gd$time))), pch = 16)
-
-
-### Test utan extremvÅden; Gårdsjön
-# GÅller endast dÅ alla trÅdslag År med
-
-#which(data_Gd$pH > 3) # Hitta rader med pH > 3
-#data_Gd_1<-data_Gd[-c(20,40,60),] # Ta bort rader med pH >3
-
-# Ta bort eventuellt tomma rader och kolumner
-#dim(data_Gd_1)
-#data_Gd_1<-data_Gd_1[ , which(!apply(data_Gd_1==0,2,all))]# Ta bort tomma kolumner
-#data_Gd_1<-data_Gd_1[!rowSums(data_Gd_1, na.rm=TRUE) == 0,] # Ta bort tomma rader
-#dim(data_Gd_1)
-
-
-#data_Gd_1$time<-1
-#data_Gd_1$time[data_Gd_1$Year=="2001"]<-6
-#data_Gd_1$time[data_Gd_1$Year=="2006"]<-11
-#data_Gd_1$time[data_Gd_1$Year=="2011"]<-16
-
-#summary(Gd_pH.mod1_1<-lme(pH~time,random=~1|Plot/Tree,correlation=corCAR1(form=~time|Plot/Tree), data=data_Gd_1[-55,]))
-#anova(Gd_pH.mod1_1)
-#fixed.effects(Gd_pH.mod1_1)
-
-#plot(Gd_pH.mod1_1, col = c(1:nlevels(as.factor(data_Gd$time))), pch = 16, main="Gårdsjön, utan avvikare")
-
-######## Subset med bara Aneboda ####
-
-## nmle regressioner
-
-summary(An.mod1.ph<-lme(pH~time,random=~1|Plot/Tree,correlation=corCAR1(form=~time|Plot/Tree), data=data_An))
-anova(An.mod1.ph)
-fixed.effects(An.mod1.ph)
-
-plot(An.mod1.ph, col = as.numeric(factor(data_An$time, levels = unique(data_An$time))), pch = 16, main="Aneboda, pH")
-
-#summary(An_pH.mod2<-lme(pH~as.factor(time),random=~1|Plot/Tree,correlation=corCAR1(form=~time|Plot/Tree), data=data_An))
-#plot(An_pH.mod2, col = as.numeric(factor(data_An$time, levels = unique(data_An$time))), pch = 16)
-
-
-### Test utan extremvÅden; Aneboda
-# Gäller endast då alla trädslag är med
-
-which(data_An$pH > 3) # Hitta rader med pH > 3
-data_An_1<-data_An[-50,] # Ta bort rader med pH >3
-names(data_An_1)
-
-# Ta bort eventuellt tomma rader och kolumner
-dim(data_An_1)
-data_An_1<-data_An_1[ , which(!apply(data_An_1==0,2,all))]# Ta bort tomma kolumner
-data_An_1<-data_An_1[!rowSums(data_An_1, na.rm=TRUE) == 0,] # Ta bort tomma rader
-dim(data_An_1)
-
-summary(An.mod1.1.ph<-lme(pH~time,random=~1|Plot/Tree,correlation=corCAR1(form=~time|Plot/Tree), data=data_An_1))
-anova(An.mod1.1.ph)
-fixed.effects(An.mod1.1.ph)
-
-plot(An.mod1.1.ph, col = c(1:nlevels(as.factor(data_An$time))), pch = 16, main="Aneboda, pH, utan avvikare")
-
-summary(An.mod2.1.ph<-lme(pH~as.factor(time),random=~1|Plot/Tree,correlation=corCAR1(form=~time|Plot/Tree), data=data_An_1))
-plot(An.mod2.1.ph, col = as.numeric(factor(data_An_1$time, levels = unique(data_An_1$time))), pch = 16)
-
-######## Subset med bara Kindla ####
-
-## nmle regressioner
-
-summary(Ki_pH.mod1<-lme(pH~time,random=~1|Plot/Tree,correlation=corCAR1(form=~time|Plot/Tree), data=data_Ki))
-anova(Ki_pH.mod1)
-fixed.effects(Ki_pH.mod1)
-
-plot(Ki_pH.mod1, col = as.numeric(factor(data_Ki$time, levels = unique(data_Ki$time))), pch = 16, main = "Kindla, pH")
-
-#summary(Ki_pH.mod2<-lme(pH~as.factor(time),random=~1|Plot/Tree,correlation=corCAR1(form=~time|Plot/Tree), data=data_Ki))
-#plot(Ki_pH.mod2, col = as.numeric(factor(data_Ki$time, levels = unique(data_Ki$time))), pch = 16, main = "Kindla")
-
-
-
-######## Subset med bara Gammtratten ####
-
-## nmle regressioner
-
-summary(Ga.mod1.ph<-lme(pH~time,random=~1|Plot/Tree,correlation=corCAR1(form=~time|Plot/Tree), data=data_Ga))
-anova(Ga.mod1.ph)
-fixed.effects(Ga.mod1.ph)
-
-plot(Ga.mod1.ph, col = as.numeric(factor(data_Ga$time, levels = unique(data_Ga$time))), pch = 16, main = "Gammtratten, pH")
-ACF(Ga.mod1.ph, maxLag = 11)
-plot(ACF(Ga.mod1.ph, alpha= .0001), main="title2")
-
-acf(residuals(Ga.mod1.ph,type="normalized"))
-
-
-#summary(Ga_pH.mod2<-lme(pH~as.factor(time),random=~1|Plot/Tree,correlation=corCAR1(form=~time|Plot/Tree), data=data_Ga))
-#plot(Ga_pH.mod2, col = as.numeric(factor(data_Ga$time, levels = unique(data_Ga$time))), pch = 16, main = "Gammtratten pH")
-
-a <- customplot(Gårdsjön, x= Year, y=pH)
-b <- customplot(Aneboda, x= Year, y=pH)
-c <- customplot(Kindla,x= Year, y=pH)
-d <- customplot(Gammtratten,x= Year, y=pH)
-
-#library(patchwork)
-a+b+c+d
-
-# Alla Siteåden i samma boxplot####
-# par(mfrow = c(2, 2))
-# boxplot(pH~Year,data=data_Gd, main="Gårdsjön, pH", xlab="Year", ylab="pH") #ylim = c(1, 4)
-# boxplot(pH~Year,data=data_An, main="Aneboda, pH", xlab="Year", ylab="pH") 
-# boxplot(pH~Year,data=data_Ki, main="Kindla, pH", xlab="Year", ylab="pH") 
-# boxplot(pH~Year,data=data_Ga, main="Gammtratten, pH", xlab="Year", ylab="pH") 
-# par(mfrow = c(1, 1))
 
 ######## Kväve #################
 
@@ -640,16 +455,6 @@ d <- customplot(Gammtratten,x= Year, y=Nitrogen)
 
 #library(patchwork)
 a+b+c+d
-
-
-
-# Alla Siteåden i samma boxplot####
-# par(mfrow = c(2, 2))
-# boxplot(Nitrogen ~Year,data=data_Gd, main="Gårdsjön, Nitrogen", xlab="Year", ylab="Nitrogen") #ylim = c(1, 4)
-# boxplot(Nitrogen ~Year,data=data_An, main="Aneboda, Nitrogen", xlab="Year", ylab="Nitrogen") 
-# boxplot(Nitrogen ~Year,data=data_Ki, main="Kindla, Nitrogen", xlab="Year", ylab="Nitrogen") 
-# boxplot(Nitrogen ~Year,data=data_Ga, main="Gammtratten, Nitrogen", xlab="Year", ylab="Nitrogen") 
-# par(mfrow = c(1, 1))
 
 
 #Diversity#####
@@ -708,14 +513,6 @@ d <- customplot(Gammtratten,x= Year, y=Shan)
 
 a+b+c+d
 
-# Alla Siteåden i samma boxplot####
-# par(mfrow = c(2, 2))
-# boxplot(Shan ~Year,data=data_Gd, main="Gårdsjön, Diversity", xlab="Year", ylab="Shannon index") #ylim = c(1, 4)
-# boxplot(Shan ~Year,data=data_An, main="Aneboda, Diversity", xlab="Year", ylab="Shannon index") 
-# boxplot(Shan ~Year,data=data_Ki, main="Kindla, Diversity", xlab="Year", ylab="Shannon index") 
-# boxplot(Shan ~Year,data=data_Ga, main="Gammtratten, Diversity", xlab="Year", ylab="Shannon index") 
-# par(mfrow = c(1, 1))
-
 
 #Richness#####
 
@@ -768,13 +565,6 @@ c <- customplot(Kindla,x= Year, y=n_sp)
 d <- customplot(Gammtratten,x= Year, y=n_sp)
 
 a+b+c+d
-# Alla Siteåden i samma boxplot####
-# par(mfrow = c(2, 2))
-#boxplot(n_sp ~Year,data=data_Gd, main="Gårdsjön, richness", xlab="Year", ylab="richness") #ylim = c(1, 4)
-# boxplot(n_sp ~Year,data=data_An, main="Aneboda, richness", xlab="Year", ylab="richness") 
-# boxplot(n_sp ~Year,data=data_Ki, main="Kindla, richness", xlab="Year", ylab="richness") 
-# boxplot(n_sp ~Year,data=data_Ga, main="Gammtratten, richness", xlab="Year", ylab="richness") 
-# par(mfrow = c(1, 1))
 
 
 #Richness of S sensitive species####
@@ -1234,48 +1024,4 @@ c <- ggplot(data4,aes(x=as.numeric(as.character(Year)),y=n_no3,colour=Site))+geo
 
 (a|b)/(c|plot_spacer())
 
-#relation deposition and sensitivity
-ggplot(data4,aes(x=s_so4,y=Sensitivity,colour=Site))+geom_point()+
-  geom_smooth(method="lm") 
 
-ggplot(data4,aes(x=n_no3,y=Sensitivity,colour=Site))+geom_point()+
-  geom_smooth(method="lm") 
-
-ggplot(data4,aes(x=n_nh4,y=Sensitivity,colour=Site))+geom_point()+
-  geom_smooth(method="lm") 
-#sensitive species proportion
-ggplot(data4,aes(x=prop_ss,y=prop_ns,colour=Site))+geom_point()+
-  geom_smooth(method="lm") 
-
-ggplot(data4,aes(x=n_no3,y=prop_ns,colour=Site))+geom_point()+
-  geom_smooth(method="lm") 
-
-
-
-#relation deposition and N
-ggplot(data4,aes(x=s_so4,y=Nitrogen,colour=Site))+geom_point()+
-  geom_smooth(method="lm") 
-
-ggplot(data4,aes(x=n_no3,y=Nitrogen,colour=Site))+geom_point()+
-  geom_smooth(method="lm") 
-
-ggplot(data4,aes(x=n_nh4,y=Nitrogen,colour=Site))+geom_point()+
-  geom_smooth(method="lm") 
-
-#relation deposition and div
-ggplot(data4,aes(x=s_so4,y=Shan,colour=Site))+geom_point()+
-  geom_smooth(method="lm") 
-
-ggplot(data4,aes(x=n_no3,y=Shan,colour=Site))+geom_point()+
-  geom_smooth(method="lm") 
-
-ggplot(data4,aes(x=n_nh4,y=Shan,colour=Site))+geom_point()+
-  geom_smooth(method="lm") 
-
-#boxplot other variables
-a <- customplot(Gårdsjön, x= Year, y=RInd)
-b <- customplot(Aneboda, x= Year, y=RInd)
-c <- customplot(Kindla,x= Year, y=RInd)
-d <- customplot(Gammtratten,x= Year, y=RInd)
-
-a+b+c+d
